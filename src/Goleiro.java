@@ -57,19 +57,15 @@ public class Goleiro extends Jogador {
             } else {
                 if (bola.m_distance < 1) {
                     goalie_catch(bola.m_direction);
-                }else if(bola.m_distance < 13 && rival == null){
+                } else if (bola.m_distance < 13 && rival == null) {
                     capturarBolaNaArea(bola);
-                }else if (bola.m_distance < 13 && rival != null) {
+                } else if (bola.m_distance < 13 && rival != null) {
                     if (matematica.distanciaEntre2Objetos(bola, rival) > bola.m_distance && (bola.m_distChange > -0.5) && (bola.m_distChange <= 0)) {
                         capturarBolaNaArea(bola);
                     } else {
-                        if (viradoPraFrente) {
-                            cercarAnguloDeChute(bola);
-                        } else {
-                            virarFrente();
-                        }
+                       turn(bola.m_direction);
                     }
-                } else if (bola.m_distance >= 13 && bola.m_distance <= 30 && bola.m_distChange < 0) {
+                } else if (bola.m_distance >= 20 && bola.m_distance <= 30 && bola.m_distChange < 0) {
                     if (viradoPraFrente) {
                         cercarAnguloDeChute(bola);
                     } else {
@@ -107,6 +103,7 @@ public class Goleiro extends Jogador {
 
     private void cercarAnguloDeChute(ObjectInfo bolaInicial) {
         int cont = 0;
+        double pX, pY;
         while (cont < 3) {
             if (cont == 0) {
                 bolaMomentoInicial = bolaInicial;
@@ -121,8 +118,14 @@ public class Goleiro extends Jogador {
                 bolaMomentoFinal = bola;
                 turn(bola.m_direction);
                 double distancia = matematica.distanciaEntre2Objetos(bolaMomentoInicial, bolaMomentoFinal);
-                double pX = matematica.getX(bolaMomentoInicial.m_distance, bolaMomentoInicial.m_direction);
-                double pY = matematica.getY(bolaMomentoInicial.m_distance, bolaMomentoInicial.m_direction);
+
+                if ((bolaMomentoInicial.m_direction < 0 && bolaMomentoFinal.m_direction < 0) || (bolaMomentoInicial.m_direction > 0 && bolaMomentoFinal.m_direction > 0)) {
+                    pX = matematica.getX(bolaMomentoInicial.m_distance, -1 * bolaMomentoInicial.m_direction);
+                    pY = matematica.getY(bolaMomentoInicial.m_distance, -1 * bolaMomentoInicial.m_direction);
+                } else {
+                    pX = matematica.getX(bolaMomentoInicial.m_distance, bolaMomentoInicial.m_direction);
+                    pY = matematica.getY(bolaMomentoInicial.m_distance, bolaMomentoInicial.m_direction);
+                }
                 double aresta, anguloA, anguloB;
                 anguloA = matematica.calcularAngulos(bolaMomentoFinal.m_distance, bolaMomentoInicial.m_distance, distancia);
                 if (bolaMomentoFinal.m_direction < 0) {
@@ -130,7 +133,7 @@ public class Goleiro extends Jogador {
                     BigDecimal bd = new BigDecimal(aresta).setScale(3, RoundingMode.HALF_EVEN);
                     aresta = bd.doubleValue();
                     anguloB = matematica.calcularAngulos(distanciaFlagCima, aresta, bolaMomentoInicial.m_distance);
-                    
+
                 } else {
                     aresta = matematica.distanciaEntre2Pontos(pX, pY, distanciaFlagBaixo, 0);
                     BigDecimal bd = new BigDecimal(aresta).setScale(3, RoundingMode.HALF_EVEN);
@@ -154,34 +157,27 @@ public class Goleiro extends Jogador {
                 Logger.getLogger(Goleiro.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        viradoPraFrente = false;
-        pertoDaFlag = false;
+       //  viradoPraFrente = false;
+       // pertoDaFlag = false;
     }
 
     private void posicionarDirecaoBola(double anguloFinal, double anguloA, double anguloB) {
         boolean pos = false;
         double distFlag = (anguloFinal < 0) ? distanciaFlagBaixo : distanciaFlagCima;
         double distancia = matematica.regraDeTres(anguloB, distFlag, anguloA);
+        distancia = (distFlag - distancia) + 2;
         System.out.println("distancia flag inicial = " + distFlag);
         ObjectInfo flagAlvo;
 
         while (!pos) {
-            if (anguloFinal < 0) {
-                flagAlvo = m_memory.getObject("flag g " + lado + " b");
-            } else {
+            if (anguloFinal > 0 && lado == 'r' || anguloFinal < 0 && lado == 'l') {
                 flagAlvo = m_memory.getObject("flag g " + lado + " t");
-            }
-
-            if (flagAlvo != null) {
-                System.out.println(flagAlvo.m_type);
+            } else {
+                flagAlvo = m_memory.getObject("flag g " + lado + " b");
             }
 
             if (flagAlvo == null) {
-                if (lado == 'r' && anguloFinal < 0) {
-                    turn(-45);
-                } else if (lado == 'r' && anguloFinal >= 0) {
-                    turn(45);
-                } else if (lado == 'l' && anguloFinal < 0) {
+                if (lado == 'r' && anguloFinal >= 0 || lado == 'l' && anguloFinal > 0) {
                     turn(45);
                 } else {
                     turn(-45);
@@ -190,28 +186,24 @@ public class Goleiro extends Jogador {
                 turn(flagAlvo.m_direction);
             } else {
                 while (flagAlvo.m_distance > distancia) {
-                    if (anguloFinal < 0) {
-                        flagAlvo = m_memory.getObject("flag g " + lado + " b");
-                    } else {
+
+                    System.out.println(flagAlvo.m_type);
+
+                    if (anguloFinal > 0 && lado == 'r' || anguloFinal < 0 && lado == 'l') {
                         flagAlvo = m_memory.getObject("flag g " + lado + " t");
+                    } else {
+                        flagAlvo = m_memory.getObject("flag g " + lado + " b");
                     }
-                    dash(100);
-                    if(flagAlvo != null)
+                    
+                    if (flagAlvo != null) {
+                        dash(10 * flagAlvo.m_distance);
                         System.out.println("flag dist = " + flagAlvo.m_distance + " distancia = " + distancia);
+                    }
                     try {
                         Thread.sleep(2 * SoccerParams.simulator_step);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(Goleiro.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                }
-                if (lado == 'r' && anguloFinal < 0) {
-                    turn(95);
-                } else if (lado == 'r' && anguloFinal >= 0) {
-                    turn(-95);
-                } else if (lado == 'l' && anguloFinal < 0) {
-                    turn(-95);
-                } else {
-                    turn(95);
                 }
                 
                 pos = true;
@@ -222,9 +214,10 @@ public class Goleiro extends Jogador {
                 Logger.getLogger(Goleiro.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        reposicionado = false;
-        pertoDaFlag = false;                
+        //reposicionado = false;
+        //pertoDaFlag = false;
         viradoPraFrente = false;
+        virarFrente();
     }
 
     private void virarFrente() {
@@ -387,6 +380,8 @@ public class Goleiro extends Jogador {
 
     @Override
     public void posicaoEmCampo() {
+        reposicionado = false;
+        pertoDaFlag = false;
         move(-50.0, 0.0);
     }
 

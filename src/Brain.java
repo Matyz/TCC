@@ -20,7 +20,7 @@ public class Brain extends Thread implements SensorInput {
         m_krislet = krislet;
         m_memory = new Memory();
         m_team = team;
-        m_side = side;
+        m_side = side; 
         m_number = number;
         m_playMode = playMode;
         start();

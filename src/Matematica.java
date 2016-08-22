@@ -30,13 +30,13 @@ public class Matematica {
     }
 
     public double getX(double distancia, double angulo) {
-        double realAngulo = 90 - Math.abs(angulo);
+        double realAngulo = 90 + Math.abs(angulo);
         realAngulo = grausToRadiano(realAngulo);
         return Math.cos(realAngulo) * distancia;
     }
 
     public double getY(double distancia, double angulo) {
-        double realAngulo = 90 - Math.abs(angulo);
+        double realAngulo = 90 + Math.abs(angulo);
         realAngulo = grausToRadiano(realAngulo);
         return Math.sin(realAngulo) * distancia;
     }

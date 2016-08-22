@@ -14,7 +14,7 @@ public class Teste {
 
         Matematica m = new Matematica();
        
-        double x = m.regraDeTres(7, 49, 70);
+        double x = m.regraDeTres(25.19497182, 7.01, 9.53925005);
         
         System.out.println(x);
     }
